@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Multiplayer AFrame</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script>
+      let socket, camera, scene;
+      let my_id,my_color;
+      let players = {}, playerTemplate;
+      window.onload = function(){
+        my_id = prompt("Enter Name")
+        my_color = prompt("Enter a color")
+        scene = document.querySelector("a-scene");
+        camera = document.querySelector("a-camera");
+        playerTemplate = document.querySelector("#playerTemplate");
+
+        socket = io.connect(`http://127.0.0.1:5000?player_id=${my_id}&player_color=${my_color}`);
+        
+        socket.on('players', function(info){
+          updatePlayers(info);
+        });
+        loop();
+      };
+      
+      function updatePosition(){       
+        info = {id:my_id, 
+                x:camera.object3D.position.x,
+                z:camera.object3D.position.z,
+                angleY:camera.object3D.rotation.y,
+                angleX:camera.object3D.rotation.x,
+                color:my_color
+              };
+        socket.emit('players', info);
+      }
+
+      function updatePlayers(info){
+        for(let pid in info){
+          let data = info[pid];
+          if(players[data.id]){
+            //Existing Player
+            players[data.id].x = data.x;
+            players[data.id].z = data.z;
+            players[data.id].angleY = data.angleY;
+            players[data.id].angleX = data.angleX;
+          }else{
+            //New Player
+            players[data.id] = {id:data.id,
+                                x:data.x,
+                                z:data.z,
+                                angleY:data.angleY,
+                                angleX:data.angleX,
+                                obj:createPlayer(data.id,data.color)};
+            if(data.id == my_id){
+              players[my_id].obj = null;
+            }else{
+              scene.append(players[data.id].obj);
+            }
+          }
+        }
+        for(let id in players){
+          let player = players[id];
+          if(player.obj){
+            player.obj.object3D.position.x = player.x;
+            player.obj.object3D.position.z = player.z;
+            player.obj.object3D.rotation.y = player.angleY;
+            let head = player.obj.getChildren()[2].getChildren()[0];
+            head.object3D.rotation.x = player.angleX;
+          }
+        }
+      }
+      function loop(){
+        updatePosition();
+        setTimeout(loop,20);
+      }
+      function createPlayer(id,color){
+        let clone = playerTemplate.cloneNode(true);
+        clone.setAttribute("position","0 0 0");
+        clone.getChildren()[0].setAttribute("value",id);
+        clone.getChildren()[1].setAttribute("color",color);
+        return clone;
+      }
+    </script>
+  </head>
+  <body>
+    <a-scene>
+      <a-cylinder position="0 2 -5" height="4" color="yellow"></a-cylinder>
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="100" height="100" color="#7BC8A4"></a-plane>
+      <a-sky color="#ECECEC"></a-sky>
+      <a-camera position="0 1.6 0"></a-camera>
+      <a-entity id="playerTemplate" position="0 -5 0">
+        <a-text value="" color="black" side="double" position="0.25 2.5 0" rotation="0 180 0"></a-text>
+        <a-cylinder position="0 0.75 0" height="1" radius="0.5" color="yellow"></a-cylinder>
+        <a-entity class="head" rotation="0 0 0">
+          <a-entity position="0 1.5 0">
+            <a-sphere position="0 0 0" radius="0.5" color="white"></a-sphere>
+            <a-sphere position="0.2 0 -0.5" radius="0.1" color="black"></a-sphere>
+            <a-sphere position="-0.2 0 -0.5" radius="0.1" color="black"></a-sphere>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

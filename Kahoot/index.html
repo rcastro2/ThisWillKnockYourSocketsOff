@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SocketIO Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <style>
+        *{font-family: Arial;}
+        .container{
+            display:flex;
+        }
+        #players div{
+            flex:1;
+            padding:10px;
+            margin:10px;
+            text-align:center;
+        }
+        #choices div{
+            border-radius:10px;
+            box-shadow: 2px 2px 2px black;
+            flex:1;
+            display:flex;
+            justify-content: center;
+            align-items: center;
+            margin:10px;
+            min-height: 200px;
+            font-size: 20px;
+        }
+        #choices div:nth-child(1){background-color:yellow ;}
+        #choices div:nth-child(2){background-color:aqua;}
+        #choices div:nth-child(3){background-color:lightgreen ;}
+        #choices div:nth-child(4){background-color:lightcoral;}
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center">SocketIO Kahoot</h1>
+    <hr>
+    <h3 style="text-align:center">Players</h3>
+    <div id="players" class="container"></div>
+    <div id="game">
+        <div id="question"></div>
+        <div id="choices" class="container"></div>
+    </div>
+
+    <script>
+        let name = prompt("Enter name")
+        let socket = io(`http://localhost:5000?name=${name}`);  
+
+        socket.on("status",function(data){
+            document.getElementById("players").innerHTML = "<h2>Game closed</h2>";
+        })
+
+        socket.on('game', function(data) {
+            document.getElementById("players").innerHTML = "";
+            document.getElementById("question").innerHTML = "";
+            document.getElementById("choices").innerHTML = "";
+            console.log(data);
+            displayPlayers(data["players"])
+            if("question" in data){
+                displayQuestion(data["question"])
+            }else if( "over" in data){
+                document.getElementById("question").innerHTML = "Game Over"
+                socket.disconnect();
+            }else{
+                document.getElementById("question").innerHTML = "Waiting...";
+            }
+        });
+
+        function displayPlayers(data){
+            let build = "";
+            for(let player of data){
+                build += `<div>${player['points']}:${player['name']}</div>`
+            }
+            document.getElementById("players").innerHTML = build;
+        }
+        function displayQuestion(data){
+            let build = ""
+            document.getElementById("question").innerHTML = `<h2>${data["question"]}</h2><hr>`;
+            let label = 1;
+            for(let choice of data["choices"]){
+                build += `<div onclick="pick(${label})">${choice}</div>`
+                label += 1
+            }
+            document.getElementById("choices").innerHTML = build;
+        }
+        function pick(label){
+            socket.emit('game', label);
+        }
+    </script>
+</body>
+</html>
