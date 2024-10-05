@@ -21,7 +21,7 @@ def connect_handler():
         emit('players', players, broadcast=True )
 
         socket_id = request.sid  
-        print(f"Client (${id}) connected with socket ID: ${socket_id}")
+        print(f"Client ({id}) connected with socket ID: {socket_id}")
 
 @socketio.on('players')
 def players_handler(info):
