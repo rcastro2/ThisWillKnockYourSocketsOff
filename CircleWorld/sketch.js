@@ -84,28 +84,28 @@ class Background{
   scroll(direction){
     for(var i = 0; i < 9; i++){
       if(direction.includes("left")){
-        this.backgroundXY[i].x-=speed;
         if(this.backgroundXY[i].x + this.width / 2 < 0){
           this.backgroundXY[i].x = this.backgroundXY[(i+2)%3].x + this.width ;
         }
+        this.backgroundXY[i].x-=speed;
       }
       if(direction.includes("right")){
-        this.backgroundXY[i].x+=speed;
         if(this.backgroundXY[i].x - this.width / 2 > width){
           this.backgroundXY[i].x = this.backgroundXY[(i+2)%3].x - this.width;
         }
+        this.backgroundXY[i].x+=speed;
       }
       if(direction.includes("up")){
-        this.backgroundXY[i].y-=speed;
         if(this.backgroundXY[i].y + this.height / 2 < 0){
           this.backgroundXY[i].y = this.backgroundXY[(i+2)%3].y + this.height;
         }
+        this.backgroundXY[i].y-=speed;
       }
       if(direction.includes("down")){
-        this.backgroundXY[i].y+=speed;
         if(this.backgroundXY[i].y - this.height / 2 > height){
           this.backgroundXY[i].y = this.backgroundXY[(i+2)%3].y - this.height;
         }
+        this.backgroundXY[i].y+=speed;
       }
       this.image.x = this.backgroundXY[i].x
       this.image.y = this.backgroundXY[i].y
