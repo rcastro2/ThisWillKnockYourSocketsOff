@@ -6,7 +6,7 @@ sio = socketio.Client()
 @sio.event
 def message(data):
     if data['sender'] != name:
-      print(f"\t\t\t\t\t\t{data['sender']}: {data['info']}")
+      print(f"\t\t\t\t\t\t\t{data['sender']}: {data['info']}")
 
 if __name__ == "__main__":
   name = input("Enter Name:")
