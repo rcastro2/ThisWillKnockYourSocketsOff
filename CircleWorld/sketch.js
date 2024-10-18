@@ -54,7 +54,7 @@ function draw() {
   if(direction != ""){
     socket.emit('players', info);
   }
-  bk.scroll(direction);
+  bk.scroll(direction,speed);
   for(let key in players){
     //Draw each player relative to you
     let screenX = players[key].x - you.x + width / 2;
@@ -71,47 +71,57 @@ function draw() {
 }
 
 class Background{
-  constructor(image){
-    this.image = image;
-    this.width = this.image.width;
-    this.height = this.image.height;
-    this.backgroundXY = []
-    //Tile the image on a 3 x 3 grid
-    for(var i = 0; i < 9; i++){
-      this.backgroundXY.push({"x":i % 3 * this.width,"y":Math.floor(i / 3) * this.height });
+  constructor(bkGraphics){
+    this.background = bkGraphics;
+    this.backgroundXY = [[],[],[]]
+    for(let r = 0; r < 3; r++){
+      for(let c = 0; c < 3; c++){
+        this.backgroundXY[r].push({"x":this.background.width * (c-1) + this.background.width / 2,"y":this.background.height * (r-1) + this.background.height / 2})
+      }
     }
   }
-  scroll(direction){
-    for(var i = 0; i < 9; i++){
-      if(direction.includes("left")){
-        if(this.backgroundXY[i].x + this.width / 2 < 0){
-          this.backgroundXY[i].x = this.backgroundXY[(i+2)%3].x + this.width ;
+  scroll(direction,amt){
+    if(direction.includes("left"))
+      for(let r = 0; r < 3; r++)
+        for(let c = 0; c < 3; c++){
+          if(this.backgroundXY[r][c]["x"] + this.background.width  / 2 <= 0){
+            this.backgroundXY[r][c]["x"] = this.backgroundXY[r][mod((c+2),3)]["x"] + this.background.width 
+          }  
+          this.backgroundXY[r][c]["x"] -= amt
         }
-        this.backgroundXY[i].x-=speed;
-      }
-      if(direction.includes("right")){
-        if(this.backgroundXY[i].x - this.width / 2 > width){
-          this.backgroundXY[i].x = this.backgroundXY[(i+2)%3].x - this.width;
+    if(direction.includes("right"))
+      for(let r = 0; r < 3; r++)
+        for(let c = 2; c >= 0; c--){
+          if(this.backgroundXY[r][c]["x"] - this.background.width  / 2 >= width){
+            this.backgroundXY[r][c]["x"] = this.backgroundXY[r][mod((c-2),3)]["x"] - this.background.width 
+          }  
+          this.backgroundXY[r][c]["x"] += amt
         }
-        this.backgroundXY[i].x+=speed;
-      }
-      if(direction.includes("up")){
-        if(this.backgroundXY[i].y + this.height / 2 < 0){
-          this.backgroundXY[i].y = this.backgroundXY[(i+2)%3].y + this.height;
+    if(direction.includes("up"))
+      for(let c = 0; c < 3; c++)
+        for(let r = 0; r < 3; r++){
+          if(this.backgroundXY[r][c]["y"] + this.background.height  / 2 <= 0){
+            this.backgroundXY[r][c]["y"] = this.backgroundXY[mod((r+2),3)][c]["y"] + this.background.height 
+          }  
+          this.backgroundXY[r][c]["y"] -= amt
         }
-        this.backgroundXY[i].y-=speed;
-      }
-      if(direction.includes("down")){
-        if(this.backgroundXY[i].y - this.height / 2 > height){
-          this.backgroundXY[i].y = this.backgroundXY[(i+2)%3].y - this.height;
+    if(direction.includes("down"))
+      for(let c = 0; c < 3; c++)
+        for(let r = 2; r >= 0; r--){
+          if(this.backgroundXY[r][c]["y"] - this.background.height  / 2 >= height){
+            this.backgroundXY[r][c]["y"] = this.backgroundXY[mod((r-2),3)][c]["y"] - this.background.height 
+          }  
+          this.backgroundXY[r][c]["y"] += amt
         }
-        this.backgroundXY[i].y+=speed;
-      }
-      this.image.x = this.backgroundXY[i].x
-      this.image.y = this.backgroundXY[i].y
-      this.image.draw();
-    }
+    for(let r = 0; r < 3; r++)
+      for(let c = 0; c < 3; c++)   
+        this.background.moveTo(this.backgroundXY[r][c]["x"],this.backgroundXY[r][c]["y"])
   } 
+}
+
+function mod(a, b) {
+  c = a % b
+  return (c < 0) ? c + b : c
 }
 
 
