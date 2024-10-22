@@ -80,6 +80,96 @@ class Sound {
     } 
 }
 
+class Game{
+    public static Graphics2D canvas;
+    public static int width;
+    public static int height;
+    public static Sprite background;
+    public static Coordinate[][] backgroundXY = new Coordinate[3][3];
+
+    public static void drawText(String msg, int x, int y){
+        canvas.drawString(msg,x,y);
+    }
+    public static void drawText(String msg, int x, int y, Font f){
+        canvas.setFont(f.font);
+        if(f.shadow != null){
+            canvas.setColor(f.shadow);
+            canvas.drawString(msg,x + 2,y + 2);
+        }
+        canvas.setColor(f.color);
+        canvas.drawString(msg,x,y);
+    }
+
+    public static int mod(int a, int b) {
+        int c = a % b;
+        return (c < 0) ? c + b : c;
+    }
+
+    public static void setBackground(Sprite bkGraphics){
+        background = bkGraphics;
+        for(int r = 0; r < 3; r++){
+            for(int c = 0; c < 3; c++){
+              backgroundXY[r][c] = new Coordinate(background.width * (c-1) + background.width / 2,background.height * (r-1) + background.height / 2);
+            }
+        }
+        System.out.println(background instanceof Animation);
+
+    }
+    public static void scrollBackground(String direction, int amt){
+        int width = (int)background.width;
+        int height = (int)background.height;
+        if(background instanceof Animation){
+            width = ((Animation)background).frame_width;
+            height = ((Animation)background).frame_height;
+        }
+        if(direction.contains("left")){
+            for(int r = 0; r < 3; r++){
+                for(int c = 0; c < 3; c++){
+                    if(backgroundXY[r][c].x + width  / 2 <= 0){
+                        backgroundXY[r][c].x = (int)(backgroundXY[r][mod((c+2),3)].x + width);
+                    }  
+                    backgroundXY[r][c].x -= amt;
+                }
+            }
+        }
+        if(direction.contains("right")){
+            for(int r = 0; r < 3; r++){
+                for(int c = 2; c >= 0; c--){
+                    if(backgroundXY[r][c].x - width  / 2 >= Game.width){
+                        backgroundXY[r][c].x = (int)(backgroundXY[r][mod((c-2),3)].x - width);
+                    }  
+                    backgroundXY[r][c].x += amt;
+                }
+            }
+        }
+        if(direction.contains("up")){
+            for(int c = 0; c < 3; c++){
+                for(int r = 0; r < 3; r++){
+                    if(backgroundXY[r][c].y + height  / 2 <= 0){
+                        backgroundXY[r][c].y = (int)(backgroundXY[mod((r+2),3)][c].y + height);
+                    }  
+                    backgroundXY[r][c].y -= amt;
+                }
+            }
+        }
+        if(direction.contains("down")){
+            for(int c = 0; c < 3; c++){
+                for(int r = 2; r >= 0; r--){
+                    if(backgroundXY[r][c].y - height  / 2 >= Game.height){
+                        backgroundXY[r][c].y = (int)(backgroundXY[mod((r-2),3)][c].y - height);
+                    }  
+                    backgroundXY[r][c].y += amt;
+                }
+            }
+        }
+        for(int r = 0; r < 3; r++)
+            for(int c = 0; c < 3; c++){
+                background.moveTo(backgroundXY[r][c].x,backgroundXY[r][c].y);
+            }           
+    }
+
+}
+
 abstract class GameObject{
     public int x, y;
     public int width, height;

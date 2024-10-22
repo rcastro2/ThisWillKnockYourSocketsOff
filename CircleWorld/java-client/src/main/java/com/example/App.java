@@ -29,7 +29,7 @@ public class App {
         }
 
         JFrame f = new JFrame();
-        Game c = new Game(800,600);
+        Window c = new Window(800,600);
         f.add(c);
         f.setSize(Game.width, Game.height);
         f.setVisible(true);
