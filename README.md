@@ -26,7 +26,7 @@ This project improves on the Chatroom Basic project by providing an asynchronous
 <hr>
 <h2>Circle World</h2>
 <p>
-This project demonstrates a multiplayer visual application using p5js, pygame and socket programming. p5js and pygame are visual libraries for rendering graphics using web based technologies and Python respectively. In this project, each player is a circle in the world and the position of each player is synchronized with all other players through the server.  There are two client applications, one client application uses Python and Pygame while the other client uses web based technologies and p5js.  There are also two additional libraries included, gamelib.py and gamelib_p5.js to assist with the rendering of the graphics in the project.  The Python and web based clients can "play" together!
+This project demonstrates a multiplayer visual application using socket programming along with the following graphics libraries and their associated programming environments: p5js (web based technologies), pygame (Python) and awt &amp; swing (Java).  In this project, each player is a circle in the world and the position of each player is synchronized with all other players through the server.  There are three client applications: first client application uses Python and Pygame, second client uses web based technologies and p5js, and the last client uses Java along with awt &amp; swing .  There are also three additional libraries included, gamelib.py, gamelib_p5.js and GameLib.java to assist with the rendering of the graphics in the project.  The Python, Java and web based clients can "play" together!
 </p>
 <hr>
 <h2> MIIVerse </h2>
