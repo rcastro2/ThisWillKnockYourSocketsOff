@@ -101,6 +101,7 @@ class Game{
     }
 
     public static int mod(int a, int b) {
+        //Mimic how Python treats modulus of negative numbers
         int c = a % b;
         return (c < 0) ? c + b : c;
     }
@@ -112,21 +113,16 @@ class Game{
               backgroundXY[r][c] = new Coordinate(background.width * (c-1) + background.width / 2,background.height * (r-1) + background.height / 2);
             }
         }
-        System.out.println(background instanceof Animation);
-
     }
     public static void scrollBackground(String direction, int amt){
-        int width = (int)background.width;
-        int height = (int)background.height;
-        if(background instanceof Animation){
-            width = ((Animation)background).frame_width;
-            height = ((Animation)background).frame_height;
-        }
+        int width = background.width;
+        int height = background.height;
+
         if(direction.contains("left")){
             for(int r = 0; r < 3; r++){
                 for(int c = 0; c < 3; c++){
                     if(backgroundXY[r][c].x + width  / 2 <= 0){
-                        backgroundXY[r][c].x = (int)(backgroundXY[r][mod((c+2),3)].x + width);
+                        backgroundXY[r][c].x = backgroundXY[r][mod((c+2),3)].x + width;
                     }  
                     backgroundXY[r][c].x -= amt;
                 }
@@ -136,7 +132,7 @@ class Game{
             for(int r = 0; r < 3; r++){
                 for(int c = 2; c >= 0; c--){
                     if(backgroundXY[r][c].x - width  / 2 >= Game.width){
-                        backgroundXY[r][c].x = (int)(backgroundXY[r][mod((c-2),3)].x - width);
+                        backgroundXY[r][c].x = backgroundXY[r][mod((c-2),3)].x - width;
                     }  
                     backgroundXY[r][c].x += amt;
                 }
@@ -146,7 +142,7 @@ class Game{
             for(int c = 0; c < 3; c++){
                 for(int r = 0; r < 3; r++){
                     if(backgroundXY[r][c].y + height  / 2 <= 0){
-                        backgroundXY[r][c].y = (int)(backgroundXY[mod((r+2),3)][c].y + height);
+                        backgroundXY[r][c].y = backgroundXY[mod((r+2),3)][c].y + height;
                     }  
                     backgroundXY[r][c].y -= amt;
                 }
@@ -156,7 +152,7 @@ class Game{
             for(int c = 0; c < 3; c++){
                 for(int r = 2; r >= 0; r--){
                     if(backgroundXY[r][c].y - height  / 2 >= Game.height){
-                        backgroundXY[r][c].y = (int)(backgroundXY[mod((r-2),3)][c].y - height);
+                        backgroundXY[r][c].y = backgroundXY[mod((r-2),3)][c].y - height;
                     }  
                     backgroundXY[r][c].y += amt;
                 }
@@ -217,10 +213,7 @@ abstract class GameObject{
     public void updateRect(){
         int width = this.width;
         int height = this.height;
-        // if(this instanceof Animation){
-        //     width = ((Animation)this).frame_width;
-        //     height = ((Animation)this).frame_height;
-        // }
+  
         this.left = this.x - width/2;
         this.top = this.y - height/2;
         this.right = this.x + width/2;
@@ -235,10 +228,9 @@ class Sprite extends GameObject{
         URL url = getClass().getClassLoader().getResource(fn);
         //System.out.println(url);
         if (url != null) {
-          i = new ImageIcon(url).getImage();
-          this.width = i.getWidth(null);
-          this.height = i.getHeight(null);
-          System.out.println(this.width);
+          this.i = new ImageIcon(url).getImage();
+          this.width = this.i.getWidth(null);
+          this.height = this.i.getHeight(null);
         } else {
           System.err.println("Failed to load image: " + fn);
         }
@@ -249,9 +241,9 @@ class Sprite extends GameObject{
         this.y = y;
         URL url = getClass().getClassLoader().getResource(fn);
         if (url != null) {
-          i = new ImageIcon(url).getImage();
-          this.width = i.getWidth(null);
-          this.height = i.getHeight(null);
+          this.i = new ImageIcon(url).getImage();
+          this.width = this.i.getWidth(null);
+          this.height = this.i.getHeight(null);
         } else {
           System.err.println("Failed to load image: " + fn);
         }
@@ -259,14 +251,14 @@ class Sprite extends GameObject{
 
     public void draw(){
         if(this.visible){
-            Game.canvas.drawImage(i,(int)x,(int)y,null);
+            Game.canvas.drawImage(i,(int)(this.x - this.width/2),(int)(this.y - this.height/2),null);
         }
         updateRect();
         drawBoundaries();
     }
 
     public void resizeTo(int w, int h){
-        i = i.getScaledInstance(w, h,  java.awt.Image.SCALE_SMOOTH);
+        this.i = this.i.getScaledInstance(w, h,  java.awt.Image.SCALE_SMOOTH);
     }
 
 }
@@ -287,24 +279,21 @@ class Animation extends Sprite{
         this.current_frame = 0;
         this.width = frame_width;
         this.height = frame_height;
-        //System.out.println(this.frame_per_cols + " " + this.frame_per_rows);
     }
 
     public void draw(){
-        int x = (int)(this.x);
-        int y = (int)(this.y);
-        int sourceStartX = (current_frame % this.frame_per_cols) * frame_width;
-        int sourceStartY = (current_frame / this.frame_per_cols) * frame_height;
+        int sourceStartX = (this.current_frame % this.frame_per_cols) * this.frame_width;
+        int sourceStartY = (this.current_frame / this.frame_per_cols) * this.frame_height;
         if(this.visible){
-            Game.canvas.drawImage(i,x - frame_width / 2,y - frame_height / 2,x + frame_width, y + frame_height, sourceStartX, sourceStartY, sourceStartX + frame_width, sourceStartY + frame_height,null);
+            Game.canvas.drawImage(i,this.x - this.frame_width / 2,this.y - this.frame_height / 2,this.x + this.frame_width, this.y + this.frame_height, sourceStartX, sourceStartY, sourceStartX + this.frame_width, sourceStartY + this.frame_height,null);
         }
 
         this.frame_count += this.frame_rate;
         if(this.frame_count > 1){
             this.frame_count = 0;
-            current_frame++;
+            this.current_frame++;
         }
-        current_frame = current_frame % frames;
+        this.current_frame = this.current_frame % this.frames;
 
         updateRect();
         drawBoundaries();     
